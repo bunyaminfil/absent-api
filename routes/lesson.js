@@ -24,17 +24,16 @@ router.post('/', function(req, res, next) {
         lesson: body.lesson
     }
 }).then((result) => {
-    // console.log("result", result)
     let dayFilter = result.map(x => x.dataValues)
-    console.log("day filter", dayFilter)
     if(dayFilter.length != 0) {
-        console.log("create edilemez")
-        res.send("There is this data already...")
+        res.send({
+            status : "Error",
+            error : "Eklemek istediğiniz veriler zaten mevcuttur..."
+        })
     } else {
         db.lessonmodel.create(body).then(function(result){
         res.json(result.toJSON());
         })
-        //console.log("create edildi")
     }
 })
 });
@@ -64,7 +63,7 @@ router.put('/:id', function(req, res, next) {
 
       }else {
           res.status(404).send({
-              error : "Aradığınız id bulunamadı..."
+              error : "Güncellemek istediğiniz id bulunamadı..."
           })
       }
   },function(){
@@ -82,7 +81,8 @@ router.delete('/:id', function(req, res, next) {
     }).then(function(rowDeleted){
         if(rowDeleted === 0){
             res.status(404).send({
-                error : "Girmek istediğiniz id bulunamadı..."
+                status : "Error",
+                error : "Silmek istediğiniz id bulunamadı..."
             });
         }else {
             res.status(204).send();

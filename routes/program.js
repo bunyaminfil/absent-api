@@ -6,16 +6,14 @@ var _ = require("underscore");
 var sequelize = require("sequelize");
 var db = require("../db");
 const { query } = require('express');
+const { result } = require('underscore');
 
 var q = "SELECT program.id, program.userid, lesson.lesson, day.day, program.absent, program.hour from absent.program INNER JOIN absent.day ON program.dayid = day.id INNER JOIN absent.lesson ON program.lessonid = lesson.id";
 
 router.get('/', function(req, res, next){
     db.sequelize.query(q, { type: db.sequelize.QueryTypes.SELECT }).then((data) => {
-     
         res.json(data);    
-    console.log(data);
     })
-  
 });
 
 router.get('/:id', (req, res) => {
@@ -27,26 +25,31 @@ router.get('/:id', (req, res) => {
     })
   })
 
-/*
-router.get('/:id', (req, res) => {
-    const id = req.params.id;
-    db.programmodel.findOne({
-        where : {
-            userid : id
-        }
-    }).then((data) => {
-        res.json(data.toJSON());  
-    })
-})*/
 // POST adding. *
 router.post('/', function(req, res, next) {
 
   let body = _.pick(req.body, "userid","lessonid","dayid","absent","hour");
-  console.log(body);
-
-  db.programmodel.create(body).then(function(data){ 
-    res.json(data.toJSON());
-  })
+    db.programmodel.findAll({
+        where : {
+            userid : body.userid,
+            lessonid : body.lessonid,
+            dayid : body.dayid,
+            absent : body.absent,
+            hour : body.hour
+        }
+    }).then((result) => {
+        let filter = result.map(x => x.dataValues)
+        if(filter != 0){
+            res.send({
+                status : "Error",
+                error : "Girilen veriler zaten mevcuttur..."
+            })
+        }else{
+            db.programmodel.create(body).then(function(data){ 
+                res.json(data.toJSON());
+              })
+        }
+    })
 });
 
 // PUT updating. *
@@ -104,7 +107,8 @@ router.delete('/:id', function(req, res, next) {
     }).then(function(rowDeleted){
         if(rowDeleted === 0){
             res.status(404).send({
-                error : "Girmek istediğiniz id bulunamadı..."
+                status : "Error",
+                error : "Silmek istediğiniz id bulunamadı..."
             });
         }else {
             res.status(204).send();

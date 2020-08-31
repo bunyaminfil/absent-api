@@ -2,29 +2,16 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-//var bodyParser = require('body-parser');
-//var FCM = require('fcm-node');
+var cron = require('node-cron');
 var logger = require('morgan');
 var db = require('./db');
-/*
-var serverKey = 'AAAAEDKIcO0:APA91bGV0Tt0ap0fWKh2HZ3ISbU_uF0H7ohklNzTyZmUDaLXmGEZBKN9yVhllZyf9eSNI-_mxk3l1w4tNnFezywxecPPOOY9d_QTEIttGG-dO6v4qSs8IInEIhxU8r_weglkx97Bws5-'; //put your server key here
-var fcm = new FCM(serverKey);
-var registrationToken = 'YOUR_REGISTRATION_TOKEN'; //token is here
-
-app.use(logger('combined'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
-*/
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dayRouter = require('./routes/day');
 var lessonRouter = require('./routes/lesson');
 var programRouter = require('./routes/program');
-var notificationRouter = require('./routes/notification');
-//var loginRouter = require('./routes/login');
+
 const sequelize = require('./db');
 
 var app = express();
@@ -32,46 +19,18 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-//app.set(db);
-/*
-app.get('/', function (req, res) {
-  // Aboneler için mesaj hazırlanır
-  var message = {
-      to: registrationToken, //token is here
-      
-      notification: {
-        title: 'Title of your push notification', 
-        body: 'Body of your push notification' 
-    },        
-    data: {
-      score: '850',
-      time: '2:45'
-    }
-  };
-  // Firebase Cloud Messaging üzerinden mesaj gönderilir
-  fcm.send(message, function (err, response) {
-      if (err) {
-          console.log(err)
-      } else {
-          console.log("Mesaj başarılı bir şekilde gönderildi: ", response);
-      }
-  });
-  res.sendStatus(200);
-});
-*/
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/days', dayRouter);
-app.use('/lessons', lessonRouter);
-app.use('/programs', programRouter);
-app.use('/notification', notificationRouter);
-//app.use('/login',loginRouter);
+app.use('/api/v1/', indexRouter);
+app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/days', dayRouter);
+app.use('/api/v1/lessons', lessonRouter);
+app.use('/api/v1/programs', programRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -89,41 +48,72 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-db.sequelize.sync({force : false}).then(function(){
+var sendNotification = function(data) {
+  var headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": "Basic NThlMjkzYzAtODExZi00Yzk4LWI2ZjItMzlmNzRjMTgxMjNj"
+  };
+  
+  var options = {
+    host: "onesignal.com",
+    port: 443,
+    path: "/api/v1/notifications",
+    method: "POST",
+    headers: headers
+  };
+  
+  var https = require('https');
+  var req = https.request(options, function(res) {  
+    res.on('data', function(data) {
+      console.log("Response:");
+      console.log(JSON.parse(data));
+    });
+  });
+  
+  req.on('error', function(e) {
+    console.log("ERROR:");
+    console.log(e);
+  });
+  
+  req.write(JSON.stringify(data));
+  req.end();
+};
 
-  console.log("VT Bağlantısı başarılı.......");
-  var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var message = { 
+  app_id: "85709f52-b07d-4e2b-8a75-6703178bb15a",
+  contents: {"en": "Başaramadık abii.."},
+  included_segments: ["All"]
+};
+
+var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
   for(let i=0;i<7;i++){
-  days[i]=i;
+  i=days[i];
   }
-  days[0]=7;
-  console.log(days[3],"gogogoggog");
-  var date = new Date();
-//console.log(db.sequelize.query("SELECT program.hour from program"));
-var current_hour = date.getHours();
-var current_day = days[date.getDay()];
-var current_minute = ("0" + date.getMinutes()).slice(-2);
-const current_time = current_hour + ":" + current_minute;
-console.log("saat : " , current_hour, current_day);
-console.log(current_minute);
-console.log(current_time);
-console.log(current_day,"saturday");
 
-db.programmodel.findOne({
-  where : {
-    dayid : current_day,
-    hour : current_time
-  }
+var date = new Date();
+
+db.programmodel.findAll({
+  attributes : ['dayid', 'hour']
 }).then((data) => {
-  if(data){
-    console.log("mesaj iletildi...",data.toJSON());
+  for(let i=0;i<data.length;i++){
     
+        let hour_value = data[i].dataValues.hour;
+        let id_value = data[i].dataValues.dayid;
+        let current_day = days[id_value]
+        let chars = hour_value.split(':');
+
+        let hour_cron = chars[0];
+        let min_cron = chars[1];
+            cron.schedule(`${min_cron} ${hour_cron} * * ${current_day}`, () => {
+              console.log('Mesaj iletildi...');
+              sendNotification(message);             
+            });   
   }
-  
-  //res.json(data);
-  //sendNotification(message);
 })
+
+db.sequelize.sync({force : false}).then(function(){
+  console.log("VT Bağlantısı başarılı.......");
 })
 
 module.exports = app;

@@ -19,27 +19,23 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res, next) {
 
     let body = _.pick(req.body, "day");
-    //console.log(body.day);
     db.daymodel.findAll({
         where: {
             day: body.day
         }
     }).then((result) => {
-        // console.log("result", result)
         let dayFilter = result.map(x => x.dataValues)
-        console.log("day filter", dayFilter)
         if(dayFilter.length != 0) {
-            console.log("create edilemez")
-            res.send("There is this data already...")
+            res.send({
+                status : "Error",
+                error : "Bu gün zaten mevcuttur..."
+            })
         } else {
             db.daymodel.create(body).then(function(result){
             res.json(result.toJSON());
             })
-            //console.log("create edildi")
         }
     })
-    // db.daymodel.create(body).then(function(data){ 
-    // })    
 });
 
 // PUT updating. *
