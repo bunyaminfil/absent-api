@@ -91,8 +91,6 @@ var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
   i=days[i];
   }
 
-var date = new Date();
-
 db.programmodel.findAll({
   attributes : ['dayid', 'hour']
 }).then((data) => {
