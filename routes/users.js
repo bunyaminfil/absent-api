@@ -12,13 +12,15 @@ const { route } = require('./program');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   db.usermodel.findAll().then((data) =>{
-    res.json(data);
+    res.json({
+      status : "Success",
+      data : data
+    });
   })
 });
 
-router.get('/login', (req, res) => {
+router.post('/login', (req, res) => {
   const { email, password } = req.body;
- 
   db.usermodel.findOne({
     where : {
       email: email,
