@@ -7,16 +7,16 @@ var sequelize = require("sequelize");
 var db = require("../db");
 const { query } = require('express');
 const { result } = require('underscore');
-
+/*
 var q = "SELECT program.id, program.userid, lesson.lesson, day.day, program.absent, program.hour from absent.program INNER JOIN absent.day ON program.dayid = day.id INNER JOIN absent.lesson ON program.lessonid = lesson.id";
 
 router.get('/', function(req, res, next){
     db.sequelize.query(q, { type: db.sequelize.QueryTypes.SELECT }).then((data) => {
         res.json(data);    
     })
-});
+});*/
 
-router.get("/get", (req, res) => {
+router.get("/", (req, res) => {
     db.programmodel.findAll().then((data) => {
         if(data){
             res.json({
@@ -33,6 +33,27 @@ router.get("/get", (req, res) => {
     })
 })
 
+router.get("/:id", (req, res) => {
+    db.programmodel.findAll({
+        where : {
+            userid : req.params.id
+        }
+    }).then((data) => {
+        if(data){
+            res.json({
+                status: "Success",
+                data : data
+            })
+        }else{
+            res.json({
+                status : "Error",
+                error : "Error..."
+            })
+        }
+        
+    })
+})
+/*
 router.get('/:id', (req, res) => {
     const id = req.params.id;
     var query_userid = "SELECT program.id, program.userid, lesson.lesson, day.day, program.absent, program.hour from absent.program INNER JOIN absent.day ON program.dayid = day.id INNER JOIN absent.lesson ON program.lessonid = lesson.id WHERE userid = " + id;
@@ -41,14 +62,14 @@ router.get('/:id', (req, res) => {
       res.json(data);
     })
   })
-
+*/
 // POST adding. *
 router.post('/', function(req, res, next) {
 
-  let body = _.pick(req.body, "lessonid","dayid","absent","hour");
+  let body = _.pick(req.body, "userid","lessonid","dayid","absent","hour");
     db.programmodel.findAll({
         where : {
-          //  userid : body.userid,
+            userid : body.userid,
             lessonid : body.lessonid,
             dayid : body.dayid,
             absent : body.absent,
