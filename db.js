@@ -1,5 +1,5 @@
 var Sequelize = require("sequelize");
-var sequelize = new Sequelize("heroku_e7d86a97a3cb12c","bdb439846cd683","9ea121fc", {
+var sequelize = new Sequelize("heroku_e1d32c9a8dd4884","b00255a902b740","6cc82cd7", {
     host : 'us-cdbr-east-02.cleardb.com',
     dialect : 'mysql'
 });
