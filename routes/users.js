@@ -54,7 +54,7 @@ router.post('/login', (req, res) => {
 })
 
 //Insert...
-router.post('/',checkAuth, function(req,res){
+router.post('/', function(req,res){
   let body = _.pick(req.body, "name", "email", "password", "token", "phoneToken");
 
   db.usermodel.findAll({
