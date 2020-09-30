@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var cron = require('node-cron');
 var logger = require('morgan');
 var db = require('./db');
+var cors = require('cors');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -15,6 +16,7 @@ var programRouter = require('./routes/program');
 const sequelize = require('./db');
 
 var app = express();
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
