@@ -6,16 +6,17 @@ var _ = require("underscore");
 router.use(bodyParser.json());
 
 var db = require("../db");
+const checkauth = require('../middleware/checkauth');
 
 // GET listing. *
-router.get('/', function(req, res, next) {
+router.get('/',checkauth, function(req, res, next) {
   db.lessonmodel.findAll().then(function(data){
     res.json(data);
   })
 });
 
 // POST adding. *
-router.post('/', function(req, res, next) {
+router.post('/',checkauth, function(req, res, next) {
 
   let body = _.pick(req.body, "lesson");
 
@@ -39,7 +40,7 @@ router.post('/', function(req, res, next) {
 });
 
 // PUT updating. *
-router.put('/:id', function(req, res, next) {
+router.put('/:id',checkauth, function(req, res, next) {
   let lesId = req.params.id;
   let body=_.pick(req.body, "lesson");
   let attributes = {};
@@ -72,7 +73,7 @@ router.put('/:id', function(req, res, next) {
 });
 
 // DELETE removing. *
-router.delete('/:id', function(req, res, next) {
+router.delete('/:id',checkauth, function(req, res, next) {
   let lesId =req.params.id;
     db.lessonmodel.destroy({
         where : {

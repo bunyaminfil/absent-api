@@ -7,6 +7,8 @@ var sequelize = require("sequelize");
 var db = require("../db");
 const { query } = require('express');
 const { result } = require('underscore');
+const checkAuth = require('../middleware/checkauth');
+
 /*
 var q = "SELECT program.id, program.userid, lesson.lesson, day.day, program.absent, program.hour from absent.program INNER JOIN absent.day ON program.dayid = day.id INNER JOIN absent.lesson ON program.lessonid = lesson.id";
 
@@ -16,7 +18,7 @@ router.get('/', function(req, res, next){
     })
 });*/
 
-router.get("/", (req, res) => {
+router.get("/",checkAuth, (req, res) => {
     db.programmodel.findAll().then((data) => {
         if(data){
             res.json({
@@ -33,7 +35,7 @@ router.get("/", (req, res) => {
     })
 })
 
-router.get("/:id", (req, res) => {
+router.get("/:id",checkAuth, (req, res) => {
     db.programmodel.findAll({
         where : {
             userid : req.params.id
@@ -64,7 +66,7 @@ router.get('/:id', (req, res) => {
   })
 */
 // POST adding. *
-router.post('/', function(req, res, next) {
+router.post('/',checkAuth, function(req, res, next) {
 
   let body = _.pick(req.body, "userid","lessonid","dayid","absent","hour");
     db.programmodel.findAll({
@@ -91,7 +93,7 @@ router.post('/', function(req, res, next) {
 });
 
 // PUT updating. *
-router.put('/:id', function(req, res, next) {
+router.put('/:id',checkAuth, function(req, res, next) {
   let programId = req.params.id;
   let body=_.pick(req.body, "userid","lessonid","dayid","absent","hour");
   let attributes = {};
@@ -136,7 +138,7 @@ if(body.hasOwnProperty("hour")){
 });
 
 // DELETE removing. *
-router.delete('/:id', function(req, res, next) {
+router.delete('/:id',checkAuth, function(req, res, next) {
   let programId =req.params.id;
     db.programmodel.destroy({
         where : {

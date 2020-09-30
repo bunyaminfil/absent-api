@@ -8,9 +8,11 @@ var db = require("../db");
 const { query } = require('express');
 const { pick, result } = require('underscore');
 const { route } = require('./program');
+const jwt = require('jsonwebtoken')
+const checkAuth = require('../middleware/checkauth');
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
+router.get('/', checkAuth, function(req, res, next) {
   db.usermodel.findAll().then((data) =>{
     res.json({
       status : "Success",
@@ -28,12 +30,22 @@ router.post('/login', (req, res) => {
     }
   }).then((data) => {
     if(data){
-      res.json({
-        status : "Success",
-        data : data
-      });
-    }else{
+      const token = jwt.sign({
+        id: data.dataValues,
+        email : body.email
+      },
+      'secret_key',
+      {
+        expiresIn : "2h"
+      }
+      )
       res.send({
+        status : "success",
+        data: data.dataValues,
+        token : token
+      })
+    }else{
+      res.status(404).send({
         status : "Error",
         error : "Wrong Email or Password!!!"
       })
@@ -42,8 +54,8 @@ router.post('/login', (req, res) => {
 })
 
 //Insert...
-router.post('/', function(req,res){
-  let body = _.pick(req.body, "name", "email", "password");
+router.post('/',checkAuth, function(req,res){
+  let body = _.pick(req.body, "name", "email", "password", "token", "phoneToken");
 
   db.usermodel.findAll({
     where: {
@@ -65,9 +77,9 @@ router.post('/', function(req,res){
 })
 
 //Update...
-router.put('/:id', function(req, res, next) {
+router.put('/:id',checkAuth, function(req, res, next) {
   let userID = req.params.id;
-  let body=_.pick(req.body, "name","email","password");
+  let body=_.pick(req.body, "name","email","password", "token", "phoneToken");
   let attributes = {};
 
   if(body.hasOwnProperty("name")){
@@ -78,6 +90,12 @@ router.put('/:id', function(req, res, next) {
 }
 if(body.hasOwnProperty("password")){
     attributes.password = body.password;
+}
+if(body.hasOwnProperty("token")){
+  attributes.token = body.token;
+}
+if(body.hasOwnProperty("phoneToken")){
+  attributes.phoneToken = body.phoneToken;
 }
 
   db.usermodel.findOne({
@@ -104,7 +122,7 @@ if(body.hasOwnProperty("password")){
 });
 
 //Delete...
-router.delete('/:id', function(req, res, next) {
+router.delete('/:id',checkAuth, function(req, res, next) {
   let userID =req.params.id;
     db.usermodel.destroy({
         where : {

@@ -2,13 +2,14 @@ var express = require('express');
 var router = express.Router();
 var bodyParser = require("body-parser");
 var _ = require("underscore");
+const checkAuth = require('../middleware/checkauth');
 
 router.use(bodyParser.json());
 
 var db = require("../db");
 
 // GET listing. *
-router.get('/', function(req, res, next) {
+router.get('/',checkAuth, function(req, res, next) {
   db.daymodel.findAll().then(function(data){
     res.json(data);
   })
@@ -16,7 +17,7 @@ router.get('/', function(req, res, next) {
 });
 
 // POST adding. *
-router.post('/', function(req, res, next) {
+router.post('/',checkAuth, function(req, res, next) {
 
     let body = _.pick(req.body, "day");
     db.daymodel.findAll({
@@ -39,7 +40,7 @@ router.post('/', function(req, res, next) {
 });
 
 // PUT updating. *
-router.put('/:id', function(req, res, next) {
+router.put('/:id',checkAuth, function(req, res, next) {
   let dayId = req.params.id;
   let body=_.pick(req.body, "day");
   let attributes = {};
@@ -72,7 +73,7 @@ router.put('/:id', function(req, res, next) {
 });
 
 // DELETE removing. *
-router.delete('/:id', function(req, res, next) {
+router.delete('/:id',checkAuth, function(req, res, next) {
   let dayId =req.params.id;
     db.daymodel.destroy({
         where : {

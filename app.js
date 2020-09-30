@@ -63,7 +63,7 @@ var sendNotification = function(data) {
     method: "POST",
     headers: headers
   };
-  
+
   var https = require('https');
   var req = https.request(options, function(res) {  
     res.on('data', function(data) {
@@ -83,7 +83,7 @@ var sendNotification = function(data) {
 
 var message = { 
   app_id: "85709f52-b07d-4e2b-8a75-6703178bb15a",
-  contents: {"en": "Başaramadık abii.."},
+  contents: {"en": "Wake up sleepy, Time to go :)"},
   included_segments: ["All"]
 };
 
