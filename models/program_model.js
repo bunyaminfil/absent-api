@@ -14,6 +14,9 @@ module.exports = function(sequelize, Sequelize){
         },
         hour : {
             type : Sequelize.STRING,
+        },
+        phoneToken : {
+            type : Sequelize.STRING,
         }
     },
     {

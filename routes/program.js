@@ -35,7 +35,7 @@ router.get("/",checkAuth, (req, res) => {
     })
 })
 
-router.get("/:id",checkAuth, (req, res) => {
+/*router.get("/:id",checkAuth, (req, res) => {
     db.programmodel.findAll({
         where : {
             userid : req.params.id
@@ -54,9 +54,9 @@ router.get("/:id",checkAuth, (req, res) => {
         }
         
     })
-})
-/*
-router.get('/:id', (req, res) => {
+})*/
+
+router.get('/:id',checkAuth, (req, res) => {
     const id = req.params.id;
     var query_userid = "SELECT program.id, program.userid, lesson.lesson, day.day, program.absent, program.hour from absent.program INNER JOIN absent.day ON program.dayid = day.id INNER JOIN absent.lesson ON program.lessonid = lesson.id WHERE userid = " + id;
 
@@ -64,11 +64,29 @@ router.get('/:id', (req, res) => {
       res.json(data);
     })
   })
-*/
+
 // POST adding. *
 router.post('/',checkAuth, function(req, res, next) {
-
+   
   let body = _.pick(req.body, "userid","lessonid","dayid","absent","hour");
+  var phoneToken = "SELECT users.phoneToken from users where id = " + body.userid;
+  let attributes = {}
+
+  db.sequelize.query(phoneToken, { type: db.sequelize.QueryTypes.SELECT }).then((data) => {
+      //console.log(data);
+
+    attributes.userid = body.userid;
+    attributes.lessonid = body.lessonid;
+    attributes.dayid = body.dayid;
+    attributes.absent = body.absent;
+    attributes.hour = body.hour;
+   // attributes.phoneToken = data[0];
+    //console.log(attributes);
+    attributes = Object.assign({},attributes,data[0])
+    //console.log(attributes);
+    
+})
+
     db.programmodel.findAll({
         where : {
             userid : body.userid,
@@ -85,7 +103,7 @@ router.post('/',checkAuth, function(req, res, next) {
                 error : "Girilen veriler zaten mevcuttur..."
             })
         }else{
-            db.programmodel.create(body).then(function(data){ 
+            db.programmodel.create(attributes).then(function(data){ 
                 res.json(data.toJSON());
               })
         }

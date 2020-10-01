@@ -21,7 +21,7 @@ router.get('/', checkAuth, function(req, res, next) {
   })
 });
 
-router.post('/login', (req, res) => {
+router.post('/login',checkAuth, (req, res) => {
   const { email, password } = req.body;
   db.usermodel.findOne({
     where : {
@@ -30,19 +30,10 @@ router.post('/login', (req, res) => {
     }
   }).then((data) => {
     if(data){
-      const token = jwt.sign({
-        id: data.dataValues,
-        email : body.email
-      },
-      'secret_key',
-      {
-        expiresIn : "2h"
-      }
-      )
+    
       res.send({
         status : "success",
-        data: data.dataValues,
-        token : token
+        data: data
       })
     }else{
       res.status(404).send({
@@ -55,8 +46,12 @@ router.post('/login', (req, res) => {
 
 //Insert...
 router.post('/', function(req,res){
-  let body = _.pick(req.body, "name", "email", "password", "token", "phoneToken");
-
+  let body = _.pick(req.body, "name", "email", "password", "phoneToken");
+let attributes = {};
+attributes.name = body.name;
+attributes.email = body.email;
+attributes.password = body.password;
+attributes.phoneToken = body.phoneToken;
   db.usermodel.findAll({
     where: {
       email: body.email
@@ -64,13 +59,25 @@ router.post('/', function(req,res){
   }).then((result) =>{
     let userFilter = result.map(x => x.dataValues)
     if(userFilter.length != 0){
+      
       res.send({
         status : "Error",
         error : "BU email zaten kullanılmıştır..."
       })
     }else{
-      db.usermodel.create(body).then((result) => {
-        res.json(result.toJSON());
+      const token = jwt.sign({
+        id: result.dataValues,
+        email : body.email
+      },
+      'secret_key',
+      {
+        expiresIn : "2h"
+      }
+      )
+      attributes.token = token;
+      console.log(attributes);
+      db.usermodel.create(attributes).then((result) => {
+        res.json(result);
       })
     }
   })
