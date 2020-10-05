@@ -7,7 +7,7 @@ var logger = require('morgan');
 var db = require('./db');
 var cors = require('cors');
 var FCM = require('fcm-node');
-    var serverKey = 'AAAALi0mRzc:APA91bEBWOK5-4mtd5kMmwXXLYSd1L8VqeHli-N46tRJgNE98kJ2YsXC781x5G2xD0eBY0N4eCt6-XmPhIg7d2KYSIj2gGAYFxKPGPB7wLyX7vpOtju6naSs-haDZ6o3xiEVOb597aRd'; //put your server key here
+    var serverKey = 'AAAAkQw9HuA:APA91bEnpqcySfQAjXGawuFX_s-zPNiZ2RsdHKIyiK5Ap3b7Hvy4aQ4HYlkVc3G-NbPKcPAhHTkC9XsqVqH0xj0mL-n5rCWIM4LVrZ7Y_yXRx8Dw_sDesyoFgHHtdwygFSld5dWZzS2K'; //put your server key here
     var fcm = new FCM(serverKey);
 
 var indexRouter = require('./routes/index');
@@ -96,7 +96,7 @@ var message = {
   included_segments: ["All"]
 };
 */
-var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
   for(let i=0;i<7;i++){
   i=days[i];
@@ -109,16 +109,20 @@ db.programmodel.findAll({
 }).then((data) => {
 //console.log(data[3].dataValues.phoneToken);
   for(let i=0;i<data.length;i++){
-   // console.log(data[i].dataValues.phoneToken,"data");
+    //console.log(data[i].dataValues.phoneToken,"data");
 
-        let hour_value = data[i].dataValues.hour;
-        let id_value = data[i].dataValues.dayid;
-        let current_day = days[id_value]
-        let chars = hour_value.split(':');
+         let hour_value = data[i].dataValues.hour;
+         let id_value = data[i].dataValues.dayid;
+         let current_day = days[id_value]
+          let chars = hour_value.split(':');
 
-        let hour_cron = chars[0];
-        let min_cron = chars[1];
-            cron.schedule(`${min_cron} ${hour_cron} * * ${current_day}`, () => {
+          let hour_cron = chars[0];
+          let min_cron = chars[1];
+          let hour_info = hour_cron-1;
+//console.log(hour_cron-1,current_day);
+ //console.log(hour_cron,"-",min_cron,);
+
+            cron.schedule(`${min_cron} ${hour_info} * * ${id_value}`, () => {
               var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
                 to: data[i].dataValues.phoneToken, 
                 collapse_key: 'green',
@@ -135,6 +139,8 @@ db.programmodel.findAll({
                     console.log("Successfully sent with response: ", response);
                 }
               });
+              //console.log(data[i].dataValues.phoneToken);
+
               //console.log('Mesaj iletildi...');
               //sendNotification(message);             
             });   

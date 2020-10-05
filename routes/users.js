@@ -21,7 +21,7 @@ router.get('/', checkAuth, function(req, res, next) {
   })
 });
 
-router.post('/login',checkAuth, (req, res) => {
+router.post('/login', (req, res) => {
   const { email, password } = req.body;
   db.usermodel.findOne({
     where : {
@@ -70,9 +70,6 @@ attributes.phoneToken = body.phoneToken;
         email : body.email
       },
       'secret_key',
-      {
-        expiresIn : "2h"
-      }
       )
       attributes.token = token;
       console.log(attributes);
@@ -82,11 +79,11 @@ attributes.phoneToken = body.phoneToken;
     }
   })
 })
-
+/*
 //Update...
 router.put('/:id',checkAuth, function(req, res, next) {
   let userID = req.params.id;
-  let body=_.pick(req.body, "name","email","password", "token", "phoneToken");
+  let body=_.pick(req.body, "name","email","password");
   let attributes = {};
 
   if(body.hasOwnProperty("name")){
@@ -127,7 +124,7 @@ if(body.hasOwnProperty("phoneToken")){
       res.status(500).send();
   })
 });
-
+*/
 //Delete...
 router.delete('/:id',checkAuth, function(req, res, next) {
   let userID =req.params.id;

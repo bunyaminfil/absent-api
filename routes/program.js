@@ -35,7 +35,7 @@ router.get("/",checkAuth, (req, res) => {
     })
 })
 
-/*router.get("/:id",checkAuth, (req, res) => {
+router.get("/:id",checkAuth, (req, res) => {
     db.programmodel.findAll({
         where : {
             userid : req.params.id
@@ -54,16 +54,16 @@ router.get("/",checkAuth, (req, res) => {
         }
         
     })
-})*/
-
-router.get('/:id',checkAuth, (req, res) => {
+})
+/*
+router.get('/:id', (req, res) => {
     const id = req.params.id;
     var query_userid = "SELECT program.id, program.userid, lesson.lesson, day.day, program.absent, program.hour from absent.program INNER JOIN absent.day ON program.dayid = day.id INNER JOIN absent.lesson ON program.lessonid = lesson.id WHERE userid = " + id;
 
     db.sequelize.query(query_userid, { type: db.sequelize.QueryTypes.SELECT }).then((data) => {
       res.json(data);
     })
-  })
+  })*/
 
 // POST adding. *
 router.post('/',checkAuth, function(req, res, next) {
@@ -111,7 +111,7 @@ router.post('/',checkAuth, function(req, res, next) {
 });
 
 // PUT updating. *
-router.put('/:id',checkAuth, function(req, res, next) {
+router.put('/:id', function(req, res, next) {
   let programId = req.params.id;
   let body=_.pick(req.body, "userid","lessonid","dayid","absent","hour");
   let attributes = {};

@@ -16,9 +16,11 @@ module.exports = (sequelize, Sequelize) => {
         },
         token : {
             type : Sequelize.STRING,
+            unique : true
         },
         phoneToken : {
             type : Sequelize.STRING,
+            unique : true,
             allowNull : false,
         }
     })
