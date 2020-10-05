@@ -111,7 +111,7 @@ router.post('/',checkAuth, function(req, res, next) {
 });
 
 // PUT updating. *
-router.put('/:id', function(req, res, next) {
+router.put('/:id', checkAuth, function(req, res, next) {
   let programId = req.params.id;
   let body=_.pick(req.body, "userid","lessonid","dayid","absent","hour");
   let attributes = {};

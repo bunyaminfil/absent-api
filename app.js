@@ -147,7 +147,7 @@ db.programmodel.findAll({
   }
 })
 
-db.sequelize.sync({force : false}).then(function(){
+db.sequelize.sync({force : true}).then(function(){
   console.log("VT Bağlantısı başarılı.......");
 })
 
